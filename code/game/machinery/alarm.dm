@@ -225,6 +225,7 @@
 	air_alarm_repository.update_cache(src)
 
 /obj/machinery/alarm/initialize()
+	..()
 	set_frequency(frequency)
 	if(!master_is_operating())
 		elect_master()
@@ -768,6 +769,7 @@
 	var/turf/pos = get_turf(src)
 	data["x"] = pos.x
 	data["y"] = pos.y
+	// TODO: Tie into space manager
 	data["z"] = pos.z
 	return data
 

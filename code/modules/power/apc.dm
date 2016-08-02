@@ -99,10 +99,21 @@
 	var/global/list/status_overlays_lighting
 	var/global/list/status_overlays_environ
 	var/indestructible = 0 // If set, prevents aliens from destroying it
+	var/keep_preset_name = 0
 
 	var/report_power_alarm = 1
 
 	var/shock_proof = 0 //if set to 1, this APC will not arc bolts of electricity if it's overloaded.
+
+/obj/machinery/power/apc/worn_out
+	name = "\improper Worn out APC"
+	keep_preset_name = 1
+	locked = 0
+	environ = 0
+	equipment = 0
+	lighting = 0
+	operating = 0
+
 
 /obj/machinery/power/apc/noalarm
 	report_power_alarm = 0
@@ -159,6 +170,7 @@
 	apcs -= src
 	if(malfai && operating)
 		if(ticker.mode.config_tag == "malfunction")
+			// TODO: Tie into space manager
 			if(src.z == ZLEVEL_STATION)
 				ticker.mode:apcs--
 	area.power_light = 0
@@ -192,15 +204,19 @@
 		cell.maxcharge = cell_type	// cell_type is maximum charge (old default was 1000 or 2500 (values one and two respectively)
 		cell.charge = start_charge * cell.maxcharge / 100.0 		// (convert percentage to actual value)
 
-	var/area/A = src.loc.loc
+	var/area/A = get_area(src)
 
 
 	//if area isn't specified use current
-	if(isarea(A) && src.areastring == null)
-		src.area = A
+	if(keep_preset_name)
+		if(isarea(A))
+			area = A
+		// no-op, keep the name
+	else if(isarea(A) && src.areastring == null)
+		area = A
 		name = "\improper [area.name] APC"
 	else
-		src.area = get_area_name(areastring)
+		area = get_area_name(areastring)
 		name = "\improper [area.name] APC"
 	area.apc |= src
 	update_icon()
@@ -623,7 +639,7 @@
 		else
 			if(istype(user, /mob/living/silicon))
 				return src.attack_hand(user)
-			if (!opened && wiresexposed && \
+			if(!opened && wiresexposed && \
 				(istype(W, /obj/item/device/multitool) || \
 				istype(W, /obj/item/weapon/wirecutters) || istype(W, /obj/item/device/assembly/signaler)))
 				return src.attack_hand(user)
@@ -853,7 +869,7 @@
 	if(istype(user, /mob/living/silicon))
 		var/mob/living/silicon/ai/AI = user
 		var/mob/living/silicon/robot/robot = user
-		if (                                                             \
+		if(                                                             \
 			src.aidisabled ||                                            \
 			malfhack && istype(malfai) &&                                \
 			(                                                            \
@@ -961,8 +977,8 @@
 		return 0
 
 	else if(href_list["overload"])
-		if(istype(usr, /mob/living/silicon) && !aidisabled)
-			src.overload_lighting()
+		if(issilicon(usr) && !aidisabled)
+			overload_lighting()
 
 	else if(href_list["malfhack"])
 		var/mob/living/silicon/ai/malfai = usr
@@ -980,6 +996,7 @@
 					malfai.malfhacking = 0
 					locked = 1
 					if(ticker.mode.config_tag == "malfunction")
+						// TODO: Tie into space manager
 						if((src.z in config.station_levels)) //if(is_type_in_list(get_area(src), the_station_areas))
 							ticker.mode:apcs++
 					if(usr:parent)
@@ -1012,6 +1029,7 @@
 
 	if(malfai)
 		if(ticker.mode.config_tag == "malfunction")
+			// TODO: Tie into space manager
 			if((src.z in config.station_levels)) //if(is_type_in_list(get_area(src), the_station_areas))
 				operating ? ticker.mode:apcs++ : ticker.mode:apcs--
 
@@ -1027,6 +1045,7 @@
 	if(!malf.can_shunt)
 		to_chat(malf, "<span class='warning'>You cannot shunt.</span>")
 		return
+	// TODO: Tie into space manager
 	if(!(src.z in config.station_levels))
 		return
 	src.occupier = new /mob/living/silicon/ai(src,malf.laws,null,1)
@@ -1076,6 +1095,7 @@
 
 /obj/machinery/power/apc/proc/ion_act()
 	//intended to be exactly the same as an AI malf attack
+	// TODO: Tie into space manager
 	if(!src.malfhack && (src.z in config.station_levels))
 		if(prob(3))
 			src.locked = 1
@@ -1351,6 +1371,7 @@
 /obj/machinery/power/apc/proc/set_broken()
 	if(malfai && operating)
 		if(ticker.mode.config_tag == "malfunction")
+			// TODO: Tie into space manager
 			if((src.z in config.station_levels)) //if(is_type_in_list(get_area(src), the_station_areas))
 				ticker.mode:apcs--
 	stat |= BROKEN
@@ -1362,17 +1383,17 @@
 
 // overload all the lights in this APC area
 
-/obj/machinery/power/apc/proc/overload_lighting(var/chance = 100)
-	if(/* !get_connection() || */ !operating || shorted)
+/obj/machinery/power/apc/proc/overload_lighting(chance = 100)
+	if(!operating || shorted)
 		return
-	if( cell && cell.charge>=20)
-		cell.use(20);
+	if(cell && cell.charge >= 20)
+		cell.use(20)
 		spawn(0)
 			for(var/obj/machinery/light/L in area)
 				if(prob(chance))
 					L.on = 1
 					L.broken()
-				sleep(1)
+					stoplag()
 
 /obj/machinery/power/apc/proc/setsubsystem(val)
 	if(cell && cell.charge > 0)

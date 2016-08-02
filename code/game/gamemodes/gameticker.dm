@@ -48,9 +48,7 @@ var/round_start_time = 0
 		to_chat(world, "<B><FONT color='blue'>Welcome to the pre-game lobby!</FONT></B>")
 		to_chat(world, "Please, setup your character and select ready. Game will start in [pregame_timeleft] seconds")
 		while(current_state == GAME_STATE_PREGAME)
-			for(var/i=0, i<10, i++)
-				sleep(1)
-				vote.process()
+			sleep(10)
 			if(going)
 				pregame_timeleft--
 
@@ -186,7 +184,7 @@ var/round_start_time = 0
 				if(candidate_source.match_tag != current_destination.match_tag)
 					continue
 
-				if (candidate_source.match_width != current_destination.match_width || \
+				if(candidate_source.match_width != current_destination.match_width || \
 					candidate_source.match_height != current_destination.match_height)
 					continue
 
@@ -268,7 +266,8 @@ var/round_start_time = 0
 				M.client.screen += cinematic
 			if(M.stat != DEAD)
 				var/turf/T = get_turf(M)
-				if(T && T.z == 1)
+				// TODO: Tie into space manager
+				if(T && T.z == ZLEVEL_STATION)
 					M.death(0) //no mercy
 
 	//Now animate the cinematic
@@ -479,4 +478,3 @@ var/round_start_time = 0
 	event_manager.RoundEnd()
 
 	return 1
-

@@ -24,13 +24,12 @@
 			body += debug_variable("icon", new/icon(A.icon, A.icon_state, A.dir), 0)
 		#endif
 
-	var/icon/sprite
+	var/sprite
 
 	if(istype(D,/atom))
 		var/atom/AT = D
 		if(AT.icon && AT.icon_state)
-			sprite = new /icon(AT.icon, AT.icon_state)
-			usr << browse_rsc(sprite, "view_vars_sprite.png")
+			sprite = 1
 
 	title = "[D] (\ref[D]) = [D.type]"
 
@@ -162,7 +161,7 @@
 	body += "<div align='center'><table width='100%'><tr><td width='50%'>"
 
 	if(sprite)
-		body += "<table align='center' width='100%'><tr><td><img src='view_vars_sprite.png'></td><td>"
+		body += "<table align='center' width='100%'><tr><td>[bicon(D, use_class=0)]</td><td>"
 	else
 		body += "<table align='center' width='100%'><tr><td>"
 
@@ -234,6 +233,7 @@
 
 	body += "<option value='?_src_=vars;mark_object=\ref[D]'>Mark Object</option>"
 	body += "<option value='?_src_=vars;proc_call=\ref[D]'>Call Proc</option>"
+	body += "<option value='?_src_=vars;jump_to=\ref[D]'>Jump to Object</option>"
 	if(ismob(D))
 		body += "<option value='?_src_=vars;mob_player_panel=\ref[D]'>Show player panel</option>"
 
@@ -350,26 +350,18 @@ body
 
 	else if(isicon(value))
 		#ifdef VARSICON
-		var/icon/I = new/icon(value)
-		var/rnd = rand(1,10000)
-		var/rname = "tmp\ref[I][rnd].png"
-		usr << browse_rsc(I, rname)
-		html += "[name] = (<span class='value'>[value]</span>) <img class=icon src=\"[rname]\">"
+		html += "[name] = /icon (<span class='value'>[value]</span>) [bicon(value, use_class=0)]"
 		#else
 		html += "[name] = /icon (<span class='value'>[value]</span>)"
 		#endif
 
-/*		else if(istype(value, /image))
+	else if(istype(value, /image))
 		#ifdef VARSICON
-		var/rnd = rand(1, 10000)
-		var/image/I = value
-
-		src << browse_rsc(I.icon, "tmp\ref[value][rnd].png")
-		html += "[name] = <img src=\"tmp\ref[value][rnd].png\">"
+		html += "<a href='?_src_=vars;Vars=\ref[value]'>[name] \ref[value]</a> = /image (<span class='value'>[value]</span>) [bicon(value, use_class=0)]"
 		#else
-		html += "[name] = /image (<span class='value'>[value]</span>)"
+		html += "<a href='?_src_=vars;Vars=\ref[value]'>[name] \ref[value]</a> = /image (<span class='value'>[value]</span>)"
 		#endif
-*/
+
 	else if(isfile(value))
 		html += "[name] = <span class='value'>'[value]'</span>"
 
@@ -394,11 +386,7 @@ body
 				html += "<ul>"
 				var/index = 1
 				for(var/entry in L)
-					if(istext(entry))
-						html += debug_variable(entry, L[entry], level + 1)
-					//html += debug_variable("[index]", L[index], level + 1)
-					else
-						html += debug_variable(index, L[index], level + 1)
+					html += debug_variable(index, L[index], level + 1)
 					index++
 				html += "</ul>"
 
@@ -735,6 +723,17 @@ body
 
 		if(T)
 			callproc_datum(T)
+
+	else if(href_list["jump_to"])
+		if(!check_rights(R_ADMIN))
+			return
+
+		var/atom/A = locate(href_list["jump_to"])
+		var/turf/T = get_turf(A)
+		if(T)
+			usr.client.jumptoturf(T)
+		href_list["datumrefresh"] = href_list["jump_to"]
+
 
 	else if(href_list["rotatedatum"])
 		if(!check_rights(R_DEBUG|R_ADMIN))	return
@@ -1080,4 +1079,3 @@ body
 		src.debug_variables(DAT)
 
 	return
-

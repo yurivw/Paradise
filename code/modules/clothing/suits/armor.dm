@@ -1,4 +1,3 @@
-
 /obj/item/clothing/suit/armor
 	allowed = list(/obj/item/weapon/gun/energy,/obj/item/weapon/reagent_containers/spray/pepper,/obj/item/weapon/gun/projectile,/obj/item/ammo_box,/obj/item/ammo_casing,/obj/item/weapon/melee/baton,/obj/item/weapon/restraints/handcuffs,/obj/item/device/flashlight/seclite,/obj/item/weapon/melee/classic_baton/telescopic,/obj/item/weapon/kitchen/knife/combat)
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO
@@ -8,6 +7,7 @@
 	max_heat_protection_temperature = ARMOR_MAX_TEMP_PROTECT
 	strip_delay = 60
 	put_on_delay = 40
+	burn_state = FIRE_PROOF
 	species_fit = list("Vox")
 	sprite_sheets = list(
 		"Vox" = 'icons/mob/species/vox/suit.dmi'
@@ -51,7 +51,8 @@
 			W.forceMove(src)
 			attached_badge = W
 
-			action_button_name = "Remove Holobadge"
+			var/datum/action/A = new /datum/action/item_action/remove_badge(src)
+			A.Grant(user)
 			icon_state = "armorsec"
 			user.update_inv_wear_suit()
 			desc = "An armored vest that protects against some damage. This one has [attached_badge] attached to it."
@@ -64,8 +65,10 @@
 		add_fingerprint(user)
 		user.put_in_hands(attached_badge)
 
-		action_button_name = null
-		action.Remove(user)
+		for(var/X in actions)
+			var/datum/action/A = X
+			A.Remove(user)
+
 		icon_state = "armor"
 		user.update_inv_wear_suit()
 		desc = "An armored vest that protects against some damage. This one has a clip for a holobadge."
@@ -91,6 +94,20 @@
 	species_fit = null
 	sprite_sheets = null
 
+/obj/item/clothing/suit/armor/secjacket
+	name = "security jacket"
+	desc = "A sturdy black jacket with reinforced fabric. Bears insignia of NT corporate security."
+	icon_state = "secjacket_open"
+	item_state = "hos"
+	body_parts_covered = UPPER_TORSO|LOWER_TORSO|ARMS
+	armor = list(melee = 15, bullet = 10, laser = 15, energy = 5, bomb = 15, bio = 0, rad = 0)
+	cold_protection = UPPER_TORSO|LOWER_TORSO|ARMS
+	heat_protection = UPPER_TORSO|LOWER_TORSO|ARMS
+	ignore_suitadjust = 0
+	suit_adjusted = 1
+	actions_types = list(/datum/action/item_action/openclose)
+	adjust_flavour = "unzip"
+
 /obj/item/clothing/suit/armor/hos
 	name = "armored coat"
 	desc = "A trench coat enhanced with a special alloy for some protection and style."
@@ -111,7 +128,7 @@
 	flags_inv = 0
 	ignore_suitadjust = 0
 	suit_adjusted = 1
-	action_button_name = "Open/Close Trenchcoat"
+	actions_types = list(/datum/action/item_action/openclose)
 	adjust_flavour = "unbutton"
 
 /obj/item/clothing/suit/armor/hos/jensen
@@ -132,6 +149,7 @@
 	cold_protection = UPPER_TORSO|LOWER_TORSO|HANDS
 	heat_protection = UPPER_TORSO|LOWER_TORSO|HANDS
 	strip_delay = 70
+	burn_state = FLAMMABLE
 
 /obj/item/clothing/suit/armor/vest/warden/alt
 	name = "warden's jacket"
@@ -219,7 +237,7 @@
 	blood_overlay_type = "armor"
 	flags_size = ONESIZEFITSALL
 	allowed = list(/obj/item/weapon/tank/emergency_oxygen,/obj/item/weapon/reagent_containers/spray/pepper,/obj/item/device/flashlight,/obj/item/weapon/gun,/obj/item/ammo_box,/obj/item/ammo_casing,/obj/item/weapon/melee/baton,/obj/item/weapon/restraints/handcuffs,/obj/item/weapon/storage/fancy/cigarettes,/obj/item/weapon/lighter,/obj/item/device/detective_scanner,/obj/item/device/taperecorder)
-
+	burn_state = FLAMMABLE
 
 //Reactive armor
 /obj/item/clothing/suit/armor/reactive
@@ -230,10 +248,9 @@
 	item_state = "reactiveoff"
 	blood_overlay_type = "armor"
 	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0)
-	action_button_name = "Toggle Reactive Armor"
+	actions_types = list(/datum/action/item_action/toggle)
 	unacidable = 1
 	hit_reaction_chance = 50
-
 
 /obj/item/clothing/suit/armor/reactive/attack_self(mob/user)
 	active = !(active)
@@ -247,6 +264,9 @@
 		item_state = "reactiveoff"
 		add_fingerprint(user)
 	user.update_inv_wear_suit()
+	for(var/X in actions)
+		var/datum/action/A = X
+		A.UpdateButtonIcon()
 
 /obj/item/clothing/suit/armor/reactive/emp_act(severity)
 	active = 0

@@ -82,7 +82,7 @@
 				/obj/item/device/t_scanner = 60,
 				/obj/item/stack/cable_coil = 40,
 				/obj/item/stack/cable_coil{amount = 5} = 60,
-				/obj/item/stack/medical/advanced/bruise_pack = 10,
+				/obj/item/stack/medical/bruise_pack/advanced = 10,
 				/obj/item/stack/rods{amount = 10} = 80,
 				/obj/item/stack/rods{amount = 23} = 20,
 				/obj/item/stack/rods{amount = 50} = 10,
@@ -149,6 +149,15 @@
 				/obj/item/toy/cards/deck/syndicate = 2,
 				/obj/item/weapon/storage/secure/briefcase/syndie = 2,
 				"" = 90
+				)
+
+/obj/effect/spawner/lootdrop/crate_spawner // for ruins
+	name = "lootcrate spawner"
+	lootdoubles = 0
+
+	loot = list(
+				/obj/structure/closet/crate/secure/loot = 20,
+				"" = 80,
 				)
 
 /obj/effect/spawner/lootdrop/trade_sol_rare

@@ -53,7 +53,6 @@
 		new /obj/item/clothing/suit/armor/vest(src)
 		new /obj/item/weapon/gun/energy/gun(src)
 		new /obj/item/device/flash(src)
-		new /obj/item/weapon/mining_voucher(src)
 		new /obj/item/clothing/accessory/petcollar(src)
 		new /obj/item/weapon/door_remote/civillian(src)
 
@@ -318,6 +317,8 @@
 	icon_opened = "cabinetdetective_open"
 	icon_broken = "cabinetdetective_broken"
 	icon_off = "cabinetdetective_broken"
+	burn_state = FLAMMABLE
+	burntime = 20
 
 	New()
 		..()
