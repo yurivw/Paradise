@@ -597,7 +597,7 @@
 							P.forceMove(loaded_pill_bottle)
 							updateUsrDialog()
 			else
-				var/name = input(usr,"Name:","Name your bag!",reagents.get_master_reagent_name()) as text|null
+				var/name = input(usr,"Name:","Name your pack!",reagents.get_master_reagent_name()) as text|null
 				if(!name)
 					return
 				name = reject_bad_text(name)
